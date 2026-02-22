@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+    <h2>ABC Analysis</h2>
+</div>
+
+<div class="card">
+
+<table class="table">
+
+<tr class="progress-header">
+<th>Subject</th>
+<th>Open</th>
+</tr>
+
+{% for s in subjects %}
+<tr>
+
+<td>{{ s[1] }}</td>
+
+<td>
+<a href="/category-tracker/{{ s[0] }}">
+View
+</a>
+</td>
+
+</tr>
+{% endfor %}
+
+</table>
+
+</div>
+
+{% endblock %}

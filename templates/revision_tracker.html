@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+    <h2>Revision Tracker</h2>
+</div>
+
+<!-- REV 1 -->
+<div class="card">
+<h3>Revision 1 Completed</h3>
+
+<table class="table">
+
+<tr class="progress-header">
+<th>Subject</th>
+<th>Chapter</th>
+</tr>
+
+{% for r in rev1 %}
+<tr>
+<td>{{ r[0] }}</td>
+<td>{{ r[1] }}</td>
+</tr>
+{% endfor %}
+
+</table>
+
+</div>
+
+
+<!-- REV 2 -->
+<div class="card">
+<h3>Revision 2 Completed</h3>
+
+<table class="table">
+
+<tr class="progress-header">
+<th>Subject</th>
+<th>Chapter</th>
+</tr>
+
+{% for r in rev2 %}
+<tr>
+<td>{{ r[0] }}</td>
+<td>{{ r[1] }}</td>
+</tr>
+{% endfor %}
+
+</table>
+
+</div>
+
+
+<!-- REV 3 -->
+<div class="card">
+<h3>Revision 3 Completed</h3>
+
+<table class="table">
+
+<tr class="progress-header">
+<th>Subject</th>
+<th>Chapter</th>
+</tr>
+
+{% for r in rev3 %}
+<tr>
+<td>{{ r[0] }}</td>
+<td>{{ r[1] }}</td>
+</tr>
+{% endfor %}
+
+</table>
+
+</div>
+
+{% endblock %}

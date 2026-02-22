@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card" style="max-width:500px;margin:auto;">
+
+<h2>Login</h2>
+<p class="page-subtext">Internet is required. Access is validated from the Google Sheet source of truth.</p>
+
+<form method="POST">
+
+<input
+    type="text"
+    name="user_id"
+    placeholder="User ID"
+    value="{{ entered_user_id or '' }}"
+    required
+    style="width:100%;padding:12px;border-radius:8px;border:1px solid #ddd;"
+>
+
+<br><br>
+
+<input
+    type="password"
+    name="password"
+    placeholder="Password"
+    required
+    style="width:100%;padding:12px;border-radius:8px;border:1px solid #ddd;"
+>
+
+<br><br>
+
+<input
+    type="text"
+    value="{{ system_id or '' }}"
+    readonly
+    style="width:100%;padding:10px;border-radius:8px;border:1px solid #ddd;background:#f8fafc;color:#475569;"
+>
+
+<br><br>
+
+<button type="submit">Login</button>
+
+</form>
+
+</div>
+
+{% endblock %}

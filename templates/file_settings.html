@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+
+    <h2>File Manager Settings</h2>
+
+    <p style="color:#666; font-size:14px;">
+        Select base folder where study files will be stored.
+        <br>
+        Example: D:\CA_STUDY_FILES
+    </p>
+
+    <form method="POST">
+
+        <div style="margin-top:15px;">
+            <input 
+                type="text"
+                name="base_path"
+                placeholder="Enter Base Folder Path (Example: D:\CA_STUDY_FILES)"
+                value="{{ base_path if base_path else '' }}"
+                required
+                style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd;"
+            >
+        </div>
+
+        <div style="margin-top:15px;">
+            <button type="submit" class="btn-primary">
+                Save Base Folder
+            </button>
+        </div>
+
+    </form>
+
+</div>
+
+{% endblock %}

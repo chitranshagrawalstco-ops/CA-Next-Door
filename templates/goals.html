@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+<h2>Goal & Milestone Tracker</h2>
+<p class="page-subtext">Set subject targets and monitor completion against deadlines.</p>
+
+<form method="POST">
+<label>Subject</label>
+<select name="subject_id" required>
+{% for s in subjects %}
+<option value="{{ s[0] }}">{{ s[1] }}</option>
+{% endfor %}
+</select>
+
+<label>Goal Title</label>
+<input name="goal_title" placeholder="e.g. Complete Class Coverage" required>
+
+<label>Target Completion Date</label>
+<input name="target_date" type="date" required>
+
+<label>Target Completion (%)</label>
+<input name="target_percent" type="number" min="1" max="100" step="0.1" value="100" required>
+
+<label>Notes (optional)</label>
+<input name="notes" placeholder="Milestone notes">
+
+<button>Add Milestone</button>
+</form>
+</div>
+
+<div class="card">
+<h3>Milestone Status</h3>
+
+<table class="table goals-table">
+<thead>
+<tr>
+<th>Subject</th>
+<th>Goal</th>
+<th>Target Date</th>
+<th>Target %</th>
+<th>Current %</th>
+<th>Status</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+{% for g in goals %}
+<tr>
+<td>{{ g.subject_name }}</td>
+<td>{{ g.goal_title }}</td>
+<td>{{ g.target_date }}</td>
+<td>{{ g.target_percent }}%</td>
+<td>{{ g.current_percent }}%</td>
+<td>
+{% if g.status == "Completed" %}
+<span class="status-green">Completed{% if g.completed_date %} ({{ g.completed_date }}){% endif %}</span>
+{% elif g.status == "Ahead" %}
+<span class="status-green">Ahead ({{ g.days_marker }}d left)</span>
+{% elif g.status == "On Track" %}
+<span>On Track ({{ g.days_marker }}d left)</span>
+{% elif g.status == "At Risk" %}
+<span class="status-red">At Risk ({{ g.days_marker }}d left)</span>
+{% elif g.status == "Behind" %}
+<span class="status-red">Behind ({{ g.days_marker }}d overdue)</span>
+{% elif g.status == "Achieved Late" %}
+<span class="status-green">Achieved ({{ g.days_marker }}d late)</span>
+{% else %}
+<span>{{ g.status }}</span>
+{% endif %}
+</td>
+<td class="goals-action-cell">
+<a href="/goals/edit/{{ g.id }}">Edit</a> |
+{% if g.completed %}
+<a href="/goals/complete/{{ g.id }}">Mark Incomplete</a> |
+{% else %}
+<a href="/goals/complete/{{ g.id }}">Mark Complete</a> |
+{% endif %}
+<a href="/goals/delete/{{ g.id }}" onclick="return confirm('Delete this milestone?')">Delete</a>
+</td>
+</tr>
+{% if g.notes %}
+<tr>
+<td colspan="7"><small><b>Note:</b> {{ g.notes }}</small></td>
+</tr>
+{% endif %}
+{% else %}
+<tr>
+<td colspan="7">No milestones added yet.</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+
+</div>
+
+<div class="card">
+<h3>Completed Milestone History</h3>
+
+<table class="table goals-table">
+<thead>
+<tr>
+<th>Subject</th>
+<th>Goal</th>
+<th>Target Date</th>
+<th>Completed On</th>
+<th>Target %</th>
+<th>Current %</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+{% for g in completed_goals %}
+<tr>
+<td>{{ g.subject_name }}</td>
+<td>{{ g.goal_title }}</td>
+<td>{{ g.target_date }}</td>
+<td>{{ g.completed_date or '-' }}</td>
+<td>{{ g.target_percent }}%</td>
+<td>{{ g.current_percent }}%</td>
+<td class="goals-action-cell">
+<a href="/goals/complete/{{ g.id }}">Mark Incomplete</a> |
+<a href="/goals/delete/{{ g.id }}" onclick="return confirm('Delete this milestone?')">Delete</a>
+</td>
+</tr>
+{% if g.notes %}
+<tr>
+<td colspan="7"><small><b>Note:</b> {{ g.notes }}</small></td>
+</tr>
+{% endif %}
+{% else %}
+<tr>
+<td colspan="7">No completed milestones yet.</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+
+</div>
+
+{% endblock %}

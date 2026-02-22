@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card fg-hero-card">
+    <div class="fg-title-row">
+        <h2>Features Guide</h2>
+        <span class="fg-version-pill">Version {{ guide_version }}</span>
+    </div>
+    <p class="page-subtext">How to use each feature effectively. Last updated: {{ guide_last_updated }}</p>
+
+    <div class="fg-quick-steps">
+        {% for step in quick_steps %}
+        <div class="fg-step">{{ loop.index }}. {{ step }}</div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="fg-grid">
+    {% for section in sections %}
+    <div class="card fg-card">
+        <h3>{{ section.title }}</h3>
+        <p>{{ section.description }}</p>
+        <ol>
+            {% for item in section.steps %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ol>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}

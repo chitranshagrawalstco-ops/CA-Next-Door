@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+<h2>Chapter Files</h2>
+
+<p>Folder:</p>
+<small>{{ folder }}</small>
+
+</div>
+
+<div class="card">
+
+<table class="table">
+
+<tr>
+<th>File</th>
+<th>Open</th>
+</tr>
+
+{% for f in files %}
+<tr>
+<td>{{ f }}</td>
+
+<td>
+<a href="/open-file?path={{ folder }}\\{{ f }}">
+Open
+</a>
+</td>
+
+</tr>
+{% endfor %}
+
+</table>
+
+</div>
+
+{% endblock %}

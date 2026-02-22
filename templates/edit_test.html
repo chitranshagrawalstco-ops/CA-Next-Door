@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+<h2>Edit Test</h2>
+
+<form method="POST">
+
+<label>Subject</label>
+<select name="subject_id">
+{% for s in subjects %}
+<option value="{{ s[0] }}" {% if s[0] == test[1] %}selected{% endif %}>{{ s[1] }}</option>
+{% endfor %}
+</select>
+
+<label>Test Name</label>
+<input name="test_name" value="{{ test[2] }}">
+
+<label>Marks Scored</label>
+<input name="marks" type="number" step="0.01" value="{{ test[3] }}">
+
+<label>Total Marks</label>
+<input name="total" type="number" step="0.01" value="{{ test[4] }}">
+
+<label>Date</label>
+<input name="test_date" type="date" value="{{ test[5] }}">
+
+<button>Update Test</button>
+
+</form>
+</div>
+
+{% endblock %}

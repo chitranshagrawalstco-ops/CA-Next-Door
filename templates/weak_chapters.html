@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card wc-hero-card">
+    <div class="wc-hero-top">
+        <div>
+            <h2>Weak Chapter Detector</h2>
+            <p class="page-subtext">Identify pending revision bottlenecks and filter chapters instantly.</p>
+        </div>
+    </div>
+
+    <div class="wc-summary-grid">
+        <div class="wc-stat">
+            <span class="wc-stat-label">Class -> Rev1 Pending</span>
+            <span class="wc-stat-value">{{ class_only|length }}</span>
+        </div>
+        <div class="wc-stat">
+            <span class="wc-stat-label">Rev1 -> Rev2 Pending</span>
+            <span class="wc-stat-value">{{ rev1_only|length }}</span>
+        </div>
+        <div class="wc-stat">
+            <span class="wc-stat-label">Rev2 -> Rev3 Pending</span>
+            <span class="wc-stat-value">{{ rev2_only|length }}</span>
+        </div>
+    </div>
+
+    <div class="wc-filter-row">
+        <input id="wc-search" type="text" placeholder="Search by subject or chapter...">
+        <button type="button" id="wc-clear">Clear</button>
+    </div>
+
+</div>
+
+<div class="wc-stage-grid">
+    <div class="card wc-stage-card" data-stage="class_to_rev1">
+        <div class="wc-stage-head">
+            <h3>Class Done, Rev1 Pending</h3>
+            <span class="wc-badge"><span class="wc-visible-count">{{ class_only|length }}</span> / {{ class_only|length }}</span>
+        </div>
+        <div class="wc-table-wrap">
+            <table class="table wc-table">
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Chapter</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in class_only %}
+                    <tr class="wc-row" data-search="{{ (c[2] ~ ' ' ~ c[3])|lower }}">
+                        <td>{{ c[2] }}</td>
+                        <td>
+                            <div class="wc-row-main">
+                                <span>{{ c[3] }}</span>
+                                <a class="wc-task-btn" href="/weak-chapters/add-task/{{ c[0] }}/{{ c[1] }}/class_rev1">Send to Task Planner</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr class="wc-empty"><td colspan="2">No weak chapters in this stage.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card wc-stage-card" data-stage="rev1_to_rev2">
+        <div class="wc-stage-head">
+            <h3>Rev1 Done, Rev2 Pending</h3>
+            <span class="wc-badge"><span class="wc-visible-count">{{ rev1_only|length }}</span> / {{ rev1_only|length }}</span>
+        </div>
+        <div class="wc-table-wrap">
+            <table class="table wc-table">
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Chapter</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in rev1_only %}
+                    <tr class="wc-row" data-search="{{ (c[2] ~ ' ' ~ c[3])|lower }}">
+                        <td>{{ c[2] }}</td>
+                        <td>
+                            <div class="wc-row-main">
+                                <span>{{ c[3] }}</span>
+                                <a class="wc-task-btn" href="/weak-chapters/add-task/{{ c[0] }}/{{ c[1] }}/rev1_rev2">Send to Task Planner</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr class="wc-empty"><td colspan="2">No weak chapters in this stage.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card wc-stage-card" data-stage="rev2_to_rev3">
+        <div class="wc-stage-head">
+            <h3>Rev2 Done, Rev3 Pending</h3>
+            <span class="wc-badge"><span class="wc-visible-count">{{ rev2_only|length }}</span> / {{ rev2_only|length }}</span>
+        </div>
+        <div class="wc-table-wrap">
+            <table class="table wc-table">
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Chapter</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in rev2_only %}
+                    <tr class="wc-row" data-search="{{ (c[2] ~ ' ' ~ c[3])|lower }}">
+                        <td>{{ c[2] }}</td>
+                        <td>
+                            <div class="wc-row-main">
+                                <span>{{ c[3] }}</span>
+                                <a class="wc-task-btn" href="/weak-chapters/add-task/{{ c[0] }}/{{ c[1] }}/rev2_rev3">Send to Task Planner</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr class="wc-empty"><td colspan="2">No weak chapters in this stage.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    const searchInput = document.getElementById("wc-search");
+    const clearBtn = document.getElementById("wc-clear");
+    const stageCards = document.querySelectorAll(".wc-stage-card");
+
+    if (!searchInput || !clearBtn || !stageCards.length) {
+        return;
+    }
+
+    function applyFilter() {
+        const query = searchInput.value.trim().toLowerCase();
+
+        stageCards.forEach(function (card) {
+            const rows = card.querySelectorAll(".wc-row");
+            const visibleCounter = card.querySelector(".wc-visible-count");
+            const emptyRow = card.querySelector(".wc-empty");
+            let visible = 0;
+
+            rows.forEach(function (row) {
+                const searchable = row.getAttribute("data-search") || "";
+                const isMatch = !query || searchable.indexOf(query) !== -1;
+                row.style.display = isMatch ? "" : "none";
+                if (isMatch) visible += 1;
+            });
+
+            if (visibleCounter) {
+                visibleCounter.textContent = String(visible);
+            }
+
+            if (emptyRow && rows.length > 0) {
+                emptyRow.style.display = visible === 0 ? "" : "none";
+                emptyRow.firstElementChild.textContent = "No rows match this search.";
+            }
+        });
+    }
+
+    clearBtn.addEventListener("click", function () {
+        searchInput.value = "";
+        applyFilter();
+        searchInput.focus();
+    });
+
+    searchInput.addEventListener("input", applyFilter);
+})();
+</script>
+
+{% endblock %}

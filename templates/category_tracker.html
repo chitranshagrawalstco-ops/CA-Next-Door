@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+    <h2>Category Tracker</h2>
+</div>
+
+<div class="card">
+<h3>A Category (High Priority)</h3>
+<ul>
+{% for c in catA %}
+<li>{{ c[0] }} - {{ c[1] }}</li>
+{% endfor %}
+</ul>
+</div>
+
+<div class="card">
+<h3>B Category (Medium Priority)</h3>
+<ul>
+{% for c in catB %}
+<li>{{ c[0] }} - {{ c[1] }}</li>
+{% endfor %}
+</ul>
+</div>
+
+<div class="card">
+<h3>C Category (Low Priority)</h3>
+<ul>
+{% for c in catC %}
+<li>{{ c[0] }} - {{ c[1] }}</li>
+{% endfor %}
+</ul>
+</div>
+
+{% endblock %}

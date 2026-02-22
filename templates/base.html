@@ -1,0 +1,93 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ branding.app_title if branding else 'CA Final Tracker' }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body class="{{ branding.body_class if branding else 'accent-blue' }}">
+
+<div class="app">
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>Menu</h2>
+
+{% if license_active %}
+        <a class="{% if request.path == '/' %}active{% endif %}" href="/">🧭 Dashboard</a>
+        <a class="{% if request.path.startswith('/subjects') or request.path.startswith('/chapters') or request.path.startswith('/chapter-notes') or request.path.startswith('/files') %}active{% endif %}" href="/subjects">📚 Subjects</a>
+        <a class="{% if request.path.startswith('/profile') or request.path.startswith('/setup') %}active{% endif %}" href="/profile">👤 Profile</a>
+        <a class="{% if request.path.startswith('/links') %}active{% endif %}" href="/links">🔗 Useful Links</a>
+        <a class="{% if request.path.startswith('/revision-tracker') %}active{% endif %}" href="/revision-tracker">🗂️ Revision Tracker</a>
+        <a class="{% if request.path.startswith('/weak-chapters') %}active{% endif %}" href="/weak-chapters">⚡ Weak Chapters</a>
+        <a class="{% if request.path.startswith('/category-tracker') %}active{% endif %}" href="/category-tracker">🏷️ ABC Analysis</a>
+        <a class="{% if request.path.startswith('/features-guide') or request.path.startswith('/featurs-guide') %}active{% endif %}" href="/features-guide">📘 Features Guide</a>
+        <a class="{% if request.path.startswith('/tasks') %}active{% endif %}" href="/tasks">✅ Task Planner</a>
+        <a class="{% if request.path.startswith('/backlog') %}active{% endif %}" href="/backlog">📌 Backlog</a>
+        <a class="{% if request.path.startswith('/study-hours') %}active{% endif %}" href="/study-hours">⏱️ Study Hours</a>
+        <a class="{% if request.path.startswith('/file-settings') %}active{% endif %}" href="/file-settings">🗄️ File Settings</a>
+        <a class="{% if request.path.startswith('/drive-settings') or request.path.startswith('/drive-setup') %}active{% endif %}" href="/drive-settings">☁️ Drive Sync</a>
+        <a class="{% if request.path.startswith('/revision-planner') %}active{% endif %}" href="/revision-planner">🧠 Revision Planner</a>
+        <a class="{% if request.path.startswith('/tests') %}active{% endif %}" href="/tests">📝 Tests</a>
+        <a class="{% if request.path.startswith('/ai-recommendation') %}active{% endif %}" href="/ai-recommendation">🤖 AI Recommendation</a>
+        <a class="{% if request.path.startswith('/goals') %}active{% endif %}" href="/goals">🎯 Goal Tracker</a>
+        <a class="{% if request.path.startswith('/adaptive-planner') %}active{% endif %}" href="/adaptive-planner">🧩 Adaptive Planner</a>
+        {% else %}
+        <a class="{% if request.path.startswith('/activate') %}active{% endif %}" href="/activate">🔐 Login</a>
+        {% endif %}
+
+
+
+
+
+
+
+
+
+
+
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+
+        <div class="topbar">
+            <a href="/" class="topbar-brand-link">
+                <span class="topbar-logo-shell">
+                    <img src="{{ branding.logo_url if branding else url_for('static', filename='images/logo.png') }}" class="app-logo">
+                </span>
+                <span class="topbar-brand-text">
+                    <span class="app-title">{{ branding.app_title if branding else 'CA Next Door' }}</span>
+                    <span class="topbar-subtitle">Exam Study Control Panel</span>
+                </span>
+            </a>
+
+            <div class="topbar-right">
+                <span class="topbar-pill">Plan. Track. Revise.</span>
+            </div>
+        </div>
+
+
+        <div class="page">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                <div class="flash-stack">
+                    {% for category, message in messages %}
+                    <div class="flash-msg {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            {% endwith %}
+            {% block content %}{% endblock %}
+        </div>
+
+    </div>
+
+
+</div>
+<footer class="app-footer">
+    {{ branding.footer_text if branding else 'Built by Chitransh & Yashashvi-Version 1.1' }}
+</footer>
+</body>
+</html>
+

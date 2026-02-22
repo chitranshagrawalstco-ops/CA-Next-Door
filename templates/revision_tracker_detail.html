@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card rt-hero-card">
+    <div class="rt-hero-top">
+        <div>
+            <h2>{{ subject_name }} - Revision Tracker</h2>
+            <p class="page-subtext">Monitor completed revision stages and quickly find chapters using search.</p>
+        </div>
+        <a class="rt-back-btn" href="/revision-tracker">Back to Subjects</a>
+    </div>
+
+    <div class="rt-summary-grid">
+        <div class="rt-stat">
+            <span class="rt-stat-label">Rev 1 Done</span>
+            <span class="rt-stat-value">{{ rev1|length }}</span>
+        </div>
+        <div class="rt-stat">
+            <span class="rt-stat-label">Rev 2 Done</span>
+            <span class="rt-stat-value">{{ rev2|length }}</span>
+        </div>
+        <div class="rt-stat">
+            <span class="rt-stat-label">Rev 3 Done</span>
+            <span class="rt-stat-value">{{ rev3|length }}</span>
+        </div>
+    </div>
+
+    <div class="rt-filter-row">
+        <input id="rt-search" type="text" placeholder="Search chapter across revisions...">
+        <button type="button" id="rt-clear">Clear</button>
+    </div>
+</div>
+
+<div class="rt-stage-grid">
+    <div class="card rt-stage-card" data-stage="rev1">
+        <div class="rt-stage-head">
+            <h3>Rev 1 Completed</h3>
+            <span class="rt-badge"><span class="rt-visible-count">{{ rev1|length }}</span> / {{ rev1|length }}</span>
+        </div>
+        <ul class="rt-list">
+            {% for r in rev1 %}
+            <li class="rt-item" data-name="{{ r[1]|lower }}">
+                <span class="rt-item-title">{{ r[1] }}</span>
+                <span class="rt-item-actions">
+                    {% if r[2] == 0 %}
+                    <a class="rt-action-btn" href="/chapters/toggle/rev2/{{ r[0] }}/{{ subject_id }}">Mark Rev2 Done</a>
+                    {% else %}
+                    <span class="rt-action-chip done">Rev2 Complete</span>
+                    {% endif %}
+                </span>
+            </li>
+            {% else %}
+            <li class="rt-empty">No chapters completed in Rev 1 yet.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="card rt-stage-card" data-stage="rev2">
+        <div class="rt-stage-head">
+            <h3>Rev 2 Completed</h3>
+            <span class="rt-badge"><span class="rt-visible-count">{{ rev2|length }}</span> / {{ rev2|length }}</span>
+        </div>
+        <ul class="rt-list">
+            {% for r in rev2 %}
+            <li class="rt-item" data-name="{{ r[1]|lower }}">
+                <span class="rt-item-title">{{ r[1] }}</span>
+                <span class="rt-item-actions">
+                    {% if r[2] == 0 %}
+                    <a class="rt-action-btn" href="/chapters/toggle/rev3/{{ r[0] }}/{{ subject_id }}">Mark Rev3 Done</a>
+                    {% else %}
+                    <span class="rt-action-chip done">Rev3 Complete</span>
+                    {% endif %}
+                </span>
+            </li>
+            {% else %}
+            <li class="rt-empty">No chapters completed in Rev 2 yet.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="card rt-stage-card" data-stage="rev3">
+        <div class="rt-stage-head">
+            <h3>Rev 3 Completed</h3>
+            <span class="rt-badge"><span class="rt-visible-count">{{ rev3|length }}</span> / {{ rev3|length }}</span>
+        </div>
+        <ul class="rt-list">
+            {% for r in rev3 %}
+            <li class="rt-item" data-name="{{ r[1]|lower }}">
+                <span class="rt-item-title">{{ r[1] }}</span>
+                <span class="rt-item-actions">
+                    <span class="rt-action-chip">Final Revision Complete</span>
+                </span>
+            </li>
+            {% else %}
+            <li class="rt-empty">No chapters completed in Rev 3 yet.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<script>
+(function () {
+    const searchInput = document.getElementById("rt-search");
+    const clearBtn = document.getElementById("rt-clear");
+    const stageCards = document.querySelectorAll(".rt-stage-card");
+
+    if (!searchInput || !clearBtn || !stageCards.length) {
+        return;
+    }
+
+    function applyFilter() {
+        const query = searchInput.value.trim().toLowerCase();
+
+        stageCards.forEach(function (card) {
+            const items = card.querySelectorAll(".rt-item");
+            const visibleCounter = card.querySelector(".rt-visible-count");
+            const emptyState = card.querySelector(".rt-empty");
+            let visible = 0;
+
+            items.forEach(function (item) {
+                const name = item.getAttribute("data-name") || "";
+                const isMatch = !query || name.indexOf(query) !== -1;
+                item.style.display = isMatch ? "" : "none";
+                if (isMatch) visible += 1;
+            });
+
+            if (visibleCounter) {
+                visibleCounter.textContent = String(visible);
+            }
+
+            if (emptyState && items.length > 0) {
+                emptyState.style.display = visible === 0 ? "" : "none";
+                emptyState.textContent = "No chapters match this search.";
+            }
+        });
+    }
+
+    clearBtn.addEventListener("click", function () {
+        searchInput.value = "";
+        applyFilter();
+        searchInput.focus();
+    });
+
+    searchInput.addEventListener("input", applyFilter);
+})();
+</script>
+
+{% endblock %}

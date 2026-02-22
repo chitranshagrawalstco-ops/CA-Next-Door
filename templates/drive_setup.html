@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card" style="max-width:620px;margin:auto;">
+    <h2>Google Drive Sync</h2>
+    <p class="page-subtext">
+        Connect Drive now for cloud sync, or skip to continue with local-only storage.
+    </p>
+
+    <div style="margin:12px 0 18px 0;padding:12px;border:1px solid #dbe3ec;border-radius:10px;background:#f8fbff;">
+        <div><strong>User:</strong> {{ state.user_id if state else '' }}</div>
+        <div><strong>System ID:</strong> {{ state.system_id if state else '' }}</div>
+        <div><strong>Drive Connected:</strong> {{ "Yes" if state and state.drive_connected else "No" }}</div>
+    </div>
+
+    <form method="POST" style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button type="submit" name="action" value="connect">Connect now</button>
+        <button type="submit" name="action" value="skip" class="secondary">Skip for now</button>
+    </form>
+
+    <p class="page-subtext" style="margin-top:12px;">
+        You can change this anytime from <a href="/drive-settings">Drive Settings</a>.
+    </p>
+</div>
+
+{% endblock %}

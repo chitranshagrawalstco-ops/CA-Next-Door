@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+<h2>Add Test</h2>
+<p class="page-subtext">Log every mock and track performance trends.</p>
+
+<form method="POST">
+
+<label>Subject</label>
+<select name="subject_id">
+{% for s in subjects %}
+<option value="{{ s[0] }}">{{ s[1] }}</option>
+{% endfor %}
+</select>
+
+<label>Test Name</label>
+<input name="test_name">
+
+<label>Marks Scored</label>
+<input name="marks" type="number" step="0.01">
+
+<label>Total Marks</label>
+<input name="total" type="number" step="0.01">
+
+<label>Date</label>
+<input name="test_date" type="date">
+
+<button>Add Test</button>
+
+</form>
+</div>
+
+
+<div class="card">
+<h3>Test History</h3>
+
+<table class="table">
+<thead>
+<tr>
+<th>Test</th>
+<th>Subject</th>
+<th>Score</th>
+<th>Date</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+
+{% for t in tests %}
+<tr>
+<td>{{ t[1] }}</td>
+<td>{{ t[2] }}</td>
+<td>
+{% if t[4] and t[4] > 0 %}
+{{ ((t[3]/t[4])*100)|round(1) }}%
+{% else %}
+0%
+{% endif %}
+</td>
+<td>{{ t[5] }}</td>
+<td>
+<a href="/tests/edit/{{ t[0] }}">Edit</a> |
+<a href="/tests/delete/{{ t[0] }}" onclick="return confirm('Delete this test?')">Delete</a>
+</td>
+</tr>
+{% endfor %}
+
+</tbody>
+</table>
+
+</div>
+
+{% endblock %}

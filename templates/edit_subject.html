@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+    <h2>Edit Subject</h2>
+
+    <form method="POST">
+        <input type="text" name="subject" value="{{ subject }}" required>
+        <button type="submit">Update</button>
+    </form>
+
+    <br>
+    <a href="/subjects"><button>Back</button></a>
+</div>
+
+{% endblock %}

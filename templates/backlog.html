@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+    <h2>Backlog Tasks</h2>
+    <p class="page-subtext">Pending tasks from past dates that still need action.</p>
+</div>
+
+<div class="card">
+
+<table class="table">
+<thead>
+<tr>
+<th>Task</th>
+<th>Date</th>
+</tr>
+</thead>
+<tbody>
+
+{% for t in backlog_tasks %}
+<tr>
+<td>{{ t[0] }}</td>
+<td>{{ t[1] }}</td>
+</tr>
+{% else %}
+<tr>
+<td colspan="2">No backlog tasks.</td>
+</tr>
+{% endfor %}
+
+</tbody>
+</table>
+
+</div>
+
+{% endblock %}

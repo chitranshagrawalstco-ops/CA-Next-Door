@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+    <h2>{{ subject_name }} - Chapters</h2>
+    <p class="page-subtext">Track class completion, revision stages, and priority category for each chapter.</p>
+
+    <form method="POST">
+        <label>Chapter Name</label>
+        <input type="text" name="chapter" placeholder="Enter Chapter" required>
+        <button type="submit">Add Chapter</button>
+    </form>
+</div>
+
+<div class="card">
+
+    <h3>Chapters List</h3>
+
+    <div class="chapters-table-wrap">
+    <table class="table chapters-table">
+
+        <thead>
+        <tr class="chapter-header">
+            <th style="text-align:left;">Chapter</th>
+            <th class="center">Class</th>
+            <th class="center">Rev 1</th>
+            <th class="center">Rev 2</th>
+            <th class="center">Rev 3</th>
+            <th class="center">Category</th>
+            <th class="center">Action</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        {% for c in chapters %}
+        <tr>
+
+            <td class="chapter-name">
+                <a href="/chapter-notes/{{ c[0] }}">{{ c[1] }}</a>
+            </td>
+
+            <td class="center">
+                <a class="toggle-btn" href="/chapters/toggle/class/{{ c[0] }}/{{ subject_id }}">
+                    {{ "&#10003;"|safe if c[2]==1 else "&#9711;"|safe }}
+                </a>
+            </td>
+
+            <td class="center">
+                <a class="toggle-btn" href="/chapters/toggle/rev1/{{ c[0] }}/{{ subject_id }}">
+                    {{ "&#10003;"|safe if c[3]==1 else "&#9711;"|safe }}
+                </a>
+            </td>
+
+            <td class="center">
+                <a class="toggle-btn" href="/chapters/toggle/rev2/{{ c[0] }}/{{ subject_id }}">
+                    {{ "&#10003;"|safe if c[4]==1 else "&#9711;"|safe }}
+                </a>
+            </td>
+
+            <td class="center">
+                <a class="toggle-btn" href="/chapters/toggle/rev3/{{ c[0] }}/{{ subject_id }}">
+                    {{ "&#10003;"|safe if c[5]==1 else "&#9711;"|safe }}
+                </a>
+            </td>
+
+            <td class="center">
+                <div class="cat-links">
+                    <a class="cat-pill {% if c|length > 6 and c[6] == 'A' %}active{% endif %}" href="/chapters/category/{{ c[0] }}/{{ subject_id }}/A">A</a>
+                    <a class="cat-pill {% if c|length > 6 and c[6] == 'B' %}active{% endif %}" href="/chapters/category/{{ c[0] }}/{{ subject_id }}/B">B</a>
+                    <a class="cat-pill {% if c|length > 6 and c[6] == 'C' %}active{% endif %}" href="/chapters/category/{{ c[0] }}/{{ subject_id }}/C">C</a>
+                </div>
+                <small class="cat-current">{{ c[6] if c|length > 6 and c[6] else "-" }}</small>
+            </td>
+
+            <td class="center chapter-action-cell">
+                <a href="/chapters/edit/{{ c[0] }}/{{ subject_id }}">Edit</a>
+                |
+                <a href="/chapters/delete/{{ c[0] }}/{{ subject_id }}">Delete</a>
+                |
+                <a href="/files/{{ subject_id }}/{{ c[0] }}">Files</a>
+            </td>
+
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="7">No chapters added yet.</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+
+    </table>
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+
+<h2>Edit Link</h2>
+
+<form method="POST">
+
+<input name="title" value="{{ link[0] }}" required>
+<input name="url" value="{{ link[1] }}" required>
+
+<button>Update Link</button>
+
+</form>
+
+</div>
+
+{% endblock %}

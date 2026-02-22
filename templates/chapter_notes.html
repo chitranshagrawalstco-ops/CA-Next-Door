@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+
+<h2>{{ chapter_name }} — Notes</h2>
+
+<div style="margin-bottom:10px;">
+
+<button type="button" onclick="formatText('bold')">Bold</button>
+<button type="button" onclick="formatText('italic')">Italic</button>
+<button type="button" onclick="highlightText()">Highlight</button>
+
+</div>
+
+<form method="POST">
+
+<div
+    id="editor"
+    contenteditable="true"
+    style="
+        min-height:300px;
+        border:1px solid #ddd;
+        padding:15px;
+        border-radius:10px;
+        background:white;
+    "
+>{{ notes|safe }}</div>
+
+<input type="hidden" name="notes" id="notesInput">
+
+<br>
+
+<button type="submit" onclick="saveNotes()">Save Notes</button>
+
+</form>
+
+</div>
+
+
+<script>
+
+function formatText(cmd){
+    document.execCommand(cmd, false, null);
+}
+
+function highlightText(){
+    document.execCommand("backColor", false, "yellow");
+}
+
+function saveNotes(){
+    document.getElementById("notesInput").value =
+        document.getElementById("editor").innerHTML;
+}
+
+</script>
+
+{% endblock %}

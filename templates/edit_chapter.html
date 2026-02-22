@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+    <h2>Edit Chapter</h2>
+
+    <form method="POST">
+        <input type="text" name="chapter" value="{{ chapter }}" required>
+        <button type="submit">Update</button>
+    </form>
+
+    <br>
+    <a href="/subjects/{{ subject_id }}/chapters"><button>Back</button></a>
+</div>
+
+{% endblock %}

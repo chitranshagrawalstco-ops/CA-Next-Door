@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+<h2>Adaptive Daily Planner</h2>
+<p>Auto-generated focus tasks for <b>{{ today_str }}</b> using overdue revisions, at-risk milestones, and weak chapters.</p>
+
+{% if added is not none %}
+<p><b>Added:</b> {{ added }} task(s){% if skipped is not none %}, <b>Skipped:</b> {{ skipped }} duplicate(s){% endif %}</p>
+{% endif %}
+</div>
+
+<div class="card">
+<h3>Recommended Tasks</h3>
+
+<form method="POST">
+<table class="table goals-table">
+<thead>
+<tr>
+<th>Select</th>
+<th>Task</th>
+<th>Source</th>
+<th>Reason</th>
+<th>Priority</th>
+</tr>
+</thead>
+<tbody>
+{% for r in recommendations %}
+<tr>
+<td><input type="checkbox" name="selected_tasks" value="{{ r.task }}" checked></td>
+<td>{{ r.task }}</td>
+<td>{{ r.source }}</td>
+<td>{{ r.reason }}</td>
+<td>{{ r.priority }}</td>
+</tr>
+{% else %}
+<tr>
+<td colspan="5">No urgent items detected for today.</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+
+{% if recommendations %}
+<button>Add Selected To Today's Tasks</button>
+{% endif %}
+</form>
+</div>
+
+{% endblock %}

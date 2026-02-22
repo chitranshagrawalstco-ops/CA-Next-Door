@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card ct-hero-card">
+    <div class="ct-hero-top">
+        <div>
+            <h2>{{ subject_name }} - Category Tracker</h2>
+            <p class="page-subtext">Track chapter priority buckets and filter quickly by chapter name.</p>
+        </div>
+        <a class="ct-back-btn" href="/category-tracker">Back to Subjects</a>
+    </div>
+
+    <div class="ct-summary-grid">
+        <div class="ct-stat">
+            <span class="ct-stat-label">Category A</span>
+            <span class="ct-stat-value">{{ catA|length }}</span>
+        </div>
+        <div class="ct-stat">
+            <span class="ct-stat-label">Category B</span>
+            <span class="ct-stat-value">{{ catB|length }}</span>
+        </div>
+        <div class="ct-stat">
+            <span class="ct-stat-label">Category C</span>
+            <span class="ct-stat-value">{{ catC|length }}</span>
+        </div>
+    </div>
+
+    <div class="ct-filter-row">
+        <input id="ct-search" type="text" placeholder="Search chapter across categories...">
+        <button type="button" id="ct-clear">Clear</button>
+    </div>
+</div>
+
+<div class="ct-stage-grid">
+    <div class="card ct-stage-card" data-stage="cat_a">
+        <div class="ct-stage-head">
+            <h3>Category A (High Priority)</h3>
+            <span class="ct-badge"><span class="ct-visible-count">{{ catA|length }}</span> / {{ catA|length }}</span>
+        </div>
+        <ul class="ct-list">
+            {% for c in catA %}
+            <li class="ct-item" data-name="{{ c[1]|lower }}">
+                <span class="ct-item-title">{{ c[1] }}</span>
+                <span class="ct-item-actions">
+                    <a class="ct-action-pill active" href="/chapters/category/{{ c[0] }}/{{ subject_id }}/A?next=category">A</a>
+                    <a class="ct-action-pill" href="/chapters/category/{{ c[0] }}/{{ subject_id }}/B?next=category">B</a>
+                    <a class="ct-action-pill" href="/chapters/category/{{ c[0] }}/{{ subject_id }}/C?next=category">C</a>
+                </span>
+            </li>
+            {% else %}
+            <li class="ct-empty">No chapters in Category A.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="card ct-stage-card" data-stage="cat_b">
+        <div class="ct-stage-head">
+            <h3>Category B (Medium Priority)</h3>
+            <span class="ct-badge"><span class="ct-visible-count">{{ catB|length }}</span> / {{ catB|length }}</span>
+        </div>
+        <ul class="ct-list">
+            {% for c in catB %}
+            <li class="ct-item" data-name="{{ c[1]|lower }}">
+                <span class="ct-item-title">{{ c[1] }}</span>
+                <span class="ct-item-actions">
+                    <a class="ct-action-pill" href="/chapters/category/{{ c[0] }}/{{ subject_id }}/A?next=category">A</a>
+                    <a class="ct-action-pill active" href="/chapters/category/{{ c[0] }}/{{ subject_id }}/B?next=category">B</a>
+                    <a class="ct-action-pill" href="/chapters/category/{{ c[0] }}/{{ subject_id }}/C?next=category">C</a>
+                </span>
+            </li>
+            {% else %}
+            <li class="ct-empty">No chapters in Category B.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="card ct-stage-card" data-stage="cat_c">
+        <div class="ct-stage-head">
+            <h3>Category C (Low Priority)</h3>
+            <span class="ct-badge"><span class="ct-visible-count">{{ catC|length }}</span> / {{ catC|length }}</span>
+        </div>
+        <ul class="ct-list">
+            {% for c in catC %}
+            <li class="ct-item" data-name="{{ c[1]|lower }}">
+                <span class="ct-item-title">{{ c[1] }}</span>
+                <span class="ct-item-actions">
+                    <a class="ct-action-pill" href="/chapters/category/{{ c[0] }}/{{ subject_id }}/A?next=category">A</a>
+                    <a class="ct-action-pill" href="/chapters/category/{{ c[0] }}/{{ subject_id }}/B?next=category">B</a>
+                    <a class="ct-action-pill active" href="/chapters/category/{{ c[0] }}/{{ subject_id }}/C?next=category">C</a>
+                </span>
+            </li>
+            {% else %}
+            <li class="ct-empty">No chapters in Category C.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<script>
+(function () {
+    const searchInput = document.getElementById("ct-search");
+    const clearBtn = document.getElementById("ct-clear");
+    const stageCards = document.querySelectorAll(".ct-stage-card");
+
+    if (!searchInput || !clearBtn || !stageCards.length) {
+        return;
+    }
+
+    function applyFilter() {
+        const query = searchInput.value.trim().toLowerCase();
+
+        stageCards.forEach(function (card) {
+            const items = card.querySelectorAll(".ct-item");
+            const visibleCounter = card.querySelector(".ct-visible-count");
+            const emptyState = card.querySelector(".ct-empty");
+            let visible = 0;
+
+            items.forEach(function (item) {
+                const name = item.getAttribute("data-name") || "";
+                const isMatch = !query || name.indexOf(query) !== -1;
+                item.style.display = isMatch ? "" : "none";
+                if (isMatch) visible += 1;
+            });
+
+            if (visibleCounter) {
+                visibleCounter.textContent = String(visible);
+            }
+
+            if (emptyState && items.length > 0) {
+                emptyState.style.display = visible === 0 ? "" : "none";
+                emptyState.textContent = "No chapters match this search.";
+            }
+        });
+    }
+
+    clearBtn.addEventListener("click", function () {
+        searchInput.value = "";
+        applyFilter();
+        searchInput.focus();
+    });
+
+    searchInput.addEventListener("input", applyFilter);
+})();
+</script>
+
+{% endblock %}

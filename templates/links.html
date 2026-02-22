@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- ADD LINK CARD -->
+<div class="card">
+    <h2>Useful Links</h2>
+    <p class="page-subtext">Store important references for quick access.</p>
+
+    <form method="POST" class="link-form">
+        <label>Title</label>
+        <input name="title" placeholder="Link Name" required>
+        <label>URL</label>
+        <input name="url" placeholder="https://..." required>
+        <button>Add Link</button>
+    </form>
+</div>
+
+
+<!-- LINKS TABLE CARD -->
+<div class="card">
+
+<table class="table">
+<thead>
+
+    <!-- HEADER -->
+    <tr class="links-header">
+        <th class="col-title">Title</th>
+        <th class="col-visit">Visit</th>
+        <th class="col-action">Action</th>
+    </tr>
+</thead>
+<tbody>
+
+    <!-- DATA -->
+    {% for l in links %}
+    <tr>
+
+        <!-- TITLE -->
+        <td class="col-title">
+            {{ l[1] }}
+        </td>
+
+        <!-- VISIT -->
+        <td class="col-visit">
+            <a class="visit-btn" href="{{ l[2] }}" target="_blank">
+                Open
+            </a>
+        </td>
+
+        <!-- ACTION -->
+        <td class="col-action">
+            <a href="/links/edit/{{ l[0] }}">Edit</a>
+            |
+            <a href="/links/delete/{{ l[0] }}">Delete</a>
+        </td>
+
+    </tr>
+    {% endfor %}
+</tbody>
+
+</table>
+
+</div>
+
+{% endblock %}

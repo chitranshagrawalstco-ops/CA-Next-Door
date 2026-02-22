@@ -1,0 +1,429 @@
+{% extends "base.html" %}
+{% block content %}
+{% set overdue_count = overdue_revisions|default([])|length %}
+
+<div class="dashboard-v2">
+
+    <div class="card db-header-card">
+        <div class="db-header-top">
+            <div>
+                <h2>Welcome {{ name }}</h2>
+                <p>Attempt: {{ attempt }}</p>
+            </div>
+
+            <div class="db-license-inline">
+                {% if license_days is not none and license_days >= 0 %}
+                    <span class="db-license-pill ok">License Active</span>
+                    <span class="db-license-days">{{ license_days }} days left</span>
+                {% elif license_days is not none %}
+                    <span class="db-license-pill bad">License Expired</span>
+                {% else %}
+                    <span class="db-license-pill bad">License Missing</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="db-kpi-grid">
+            <div class="db-kpi-item">
+                <span class="db-kpi-label">Days Left</span>
+                <span class="db-kpi-value">{{ days_left }}</span>
+            </div>
+            <div class="db-kpi-item">
+                <span class="db-kpi-label">Readiness</span>
+                <span class="db-kpi-value">{{ readiness_score|default(0) }}%</span>
+            </div>
+            <div class="db-kpi-item">
+                <span class="db-kpi-label">Today's Tasks</span>
+                <span class="db-kpi-value">{{ today_tasks|length }}</span>
+            </div>
+            <div class="db-kpi-item">
+                <span class="db-kpi-label">Overdue Revisions</span>
+                <span class="db-kpi-value">{{ overdue_count }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="db-layout-grid">
+
+        <div class="db-column">
+
+            <div class="card db-card db-streak-card">
+                <h3>Study Streak</h3>
+                <div class="db-streak-value">{{ streak_count }}</div>
+                <p>days in a row</p>
+                <a href="/mark-present">
+                    <button class="primary-btn">Mark Today Present</button>
+                </a>
+            </div>
+
+            <div class="card db-card db-pomodoro-card" id="pomodoro-card">
+                <h3>Pomodoro Clock</h3>
+
+                <div class="pomodoro-mode" id="pomodoro-mode">Focus Session</div>
+                <div class="pomodoro-time" id="pomodoro-time" aria-live="polite">25:00</div>
+
+                <div class="pomodoro-controls">
+                    <button type="button" class="pomodoro-btn" id="pomodoro-start">Start</button>
+                    <button type="button" class="pomodoro-btn" id="pomodoro-pause">Pause</button>
+                    <button type="button" class="pomodoro-btn pomodoro-btn-soft" id="pomodoro-reset">Reset</button>
+                </div>
+
+                <div class="pomodoro-meta">
+                    <span>Cycle: <b id="pomodoro-cycle">1</b></span>
+                    <span>Next break: <b id="pomodoro-next">Short (5m)</b></span>
+                    <span>Today done: <b id="pomodoro-today-count">0</b></span>
+                </div>
+            </div>
+
+            <div class="card db-card db-scroll-card">
+                <h3>Today's Tasks</h3>
+                <ul class="db-list">
+                {% for t in today_tasks %}
+                    <li>{{ t[0] }}</li>
+                {% else %}
+                    <li>No tasks for today.</li>
+                {% endfor %}
+                </ul>
+            </div>
+
+            <div class="card db-card db-scroll-card">
+                <h3>Today's Revisions</h3>
+                <ul class="db-list">
+                {% for r in today_revisions %}
+                    <li>
+                        <b>{{ r[0] }}</b> - {{ r[1] }}
+                        <span class="db-rev-tag">{{ r[2] }}</span>
+                    </li>
+                {% else %}
+                    <li>No revisions scheduled today.</li>
+                {% endfor %}
+                </ul>
+            </div>
+
+            <div class="card db-card db-scroll-card">
+                <h3>Overdue Revisions</h3>
+                <ul class="db-list db-overdue-list">
+                {% for o in overdue_revisions|default([]) %}
+                    {% if loop.index <= 8 %}
+                    <li>
+                        <span class="db-overdue-stage">{{ o.stage }}</span>
+                        <span class="db-overdue-days">
+                            {% if o.days is not none %}{{ o.days }} days{% else %}unknown{% endif %}
+                        </span>
+                        <div class="db-overdue-text">{{ o.subject }} - {{ o.chapter }}</div>
+                    </li>
+                    {% endif %}
+                {% else %}
+                    <li>No overdue revisions.</li>
+                {% endfor %}
+                </ul>
+            </div>
+
+        </div>
+
+        <div class="db-column">
+
+            <div class="card db-card db-test-card">
+                <h3>Last 5 Tests: Score Trend</h3>
+
+                {% if chart_points %}
+                <div class="test-graph-wrap">
+                    <svg viewBox="0 0 320 220" class="test-graph" role="img" aria-label="Last 5 tests line chart">
+                        <line x1="40" y1="20" x2="40" y2="160" class="axis-line"></line>
+                        <line x1="40" y1="160" x2="280" y2="160" class="axis-line"></line>
+
+                        <line x1="36" y1="160" x2="280" y2="160" class="grid-line"></line>
+                        <line x1="36" y1="100" x2="280" y2="100" class="grid-line"></line>
+                        <line x1="36" y1="40" x2="280" y2="40" class="grid-line"></line>
+
+                        <text x="8" y="162" class="axis-text">0%</text>
+                        <text x="4" y="102" class="axis-text">50%</text>
+                        <text x="0" y="42" class="axis-text">100%</text>
+
+                        {% for p in chart_points %}
+                        {% if not loop.first %}
+                        <line
+                            x1="{{ chart_points[loop.index0 - 1].x }}"
+                            y1="{{ chart_points[loop.index0 - 1].y }}"
+                            x2="{{ p.x }}"
+                            y2="{{ p.y }}"
+                            class="trend-line"></line>
+                        {% endif %}
+                        {% endfor %}
+
+                        {% for p in chart_points %}
+                        <circle cx="{{ p.x }}" cy="{{ p.y }}" r="4" class="trend-point">
+                            <title>{{ p.subject }} | {{ p.score }}%{% if p.date %} | {{ p.date }}{% endif %}</title>
+                        </circle>
+                        {% endfor %}
+
+                        {% for p in chart_points %}
+                        <text x="{{ p.x }}" y="176" class="x-label" text-anchor="middle">{{ p.subject[:10] }}</text>
+                        {% endfor %}
+
+                        <text x="12" y="12" class="axis-title">Score % (Y)</text>
+                        <text x="250" y="208" class="axis-title">Subject (X)</text>
+                    </svg>
+                </div>
+                {% else %}
+                <p>No test data available yet.</p>
+                {% endif %}
+
+                <div class="test-summary-row">
+                    <p><b>Average:</b> {{ avg_score }}%</p>
+                    <p><b>Total Tests:</b> {{ test_count }}</p>
+                </div>
+            </div>
+
+            <div class="card db-card">
+                <h3>Subject Progress</h3>
+
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th class="center">Class %</th>
+                            <th class="center">Rev1 %</th>
+                            <th class="center">Rev2 %</th>
+                            <th class="center">Rev3 %</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                    {% for p in progress %}
+                        <tr>
+                            <td>{{ p[0] }}</td>
+                            <td class="center">{{ ((p[2] or 0)/(p[1] or 1)*100)|round(1) }}%</td>
+                            <td class="center">{{ ((p[3] or 0)/(p[1] or 1)*100)|round(1) }}%</td>
+                            <td class="center">{{ ((p[4] or 0)/(p[1] or 1)*100)|round(1) }}%</td>
+                            <td class="center">{{ ((p[5] or 0)/(p[1] or 1)*100)|round(1) }}%</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+(function () {
+    const POMODORO_DURATIONS = {
+        focus: 25 * 60,
+        short: 5 * 60,
+        long: 15 * 60
+    };
+
+    const modeLabelMap = {
+        focus: "Focus Session",
+        short: "Short Break",
+        long: "Long Break"
+    };
+
+    const timeEl = document.getElementById("pomodoro-time");
+    const modeEl = document.getElementById("pomodoro-mode");
+    const cycleEl = document.getElementById("pomodoro-cycle");
+    const nextEl = document.getElementById("pomodoro-next");
+    const todayCountEl = document.getElementById("pomodoro-today-count");
+    const startBtn = document.getElementById("pomodoro-start");
+    const pauseBtn = document.getElementById("pomodoro-pause");
+    const resetBtn = document.getElementById("pomodoro-reset");
+    const storageKey = "ca_next_door_pomodoro_state";
+    const todayKeyPrefix = "ca_next_door_pomodoro_daily_";
+
+    if (!timeEl || !modeEl || !cycleEl || !nextEl || !todayCountEl || !startBtn || !pauseBtn || !resetBtn) {
+        return;
+    }
+
+    let mode = "focus";
+    let secondsLeft = POMODORO_DURATIONS.focus;
+    let timer = null;
+    let completedFocus = 0;
+    let running = false;
+
+    function getTodayKey() {
+        const d = new Date();
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return todayKeyPrefix + y + "-" + m + "-" + day;
+    }
+
+    function getTodayCount() {
+        const raw = localStorage.getItem(getTodayKey());
+        const val = parseInt(raw || "0", 10);
+        return Number.isNaN(val) ? 0 : val;
+    }
+
+    function incrementTodayCount() {
+        const next = getTodayCount() + 1;
+        localStorage.setItem(getTodayKey(), String(next));
+    }
+
+    function saveState() {
+        const payload = {
+            mode: mode,
+            secondsLeft: secondsLeft,
+            completedFocus: completedFocus,
+            running: running,
+            savedAt: Date.now()
+        };
+        localStorage.setItem(storageKey, JSON.stringify(payload));
+    }
+
+    function restoreState() {
+        try {
+            const raw = localStorage.getItem(storageKey);
+            if (!raw) return;
+            const data = JSON.parse(raw);
+            if (!data || !POMODORO_DURATIONS[data.mode]) return;
+
+            mode = data.mode;
+            secondsLeft = parseInt(data.secondsLeft, 10);
+            completedFocus = parseInt(data.completedFocus, 10);
+            running = !!data.running;
+
+            if (Number.isNaN(secondsLeft) || secondsLeft < 0 || secondsLeft > POMODORO_DURATIONS[mode]) {
+                secondsLeft = POMODORO_DURATIONS[mode];
+            }
+            if (Number.isNaN(completedFocus) || completedFocus < 0) {
+                completedFocus = 0;
+            }
+
+            if (running && data.savedAt) {
+                const elapsed = Math.floor((Date.now() - data.savedAt) / 1000);
+                secondsLeft = Math.max(secondsLeft - elapsed, 0);
+            }
+        } catch (err) {
+            mode = "focus";
+            secondsLeft = POMODORO_DURATIONS.focus;
+            completedFocus = 0;
+            running = false;
+        }
+    }
+
+    function formatTime(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return String(mins).padStart(2, "0") + ":" + String(secs).padStart(2, "0");
+    }
+
+    function beep() {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
+
+        const ctx = new AudioContextClass();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = "sine";
+        osc.frequency.value = 880;
+        gain.gain.value = 0.08;
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start();
+        setTimeout(function () {
+            osc.stop();
+            ctx.close();
+        }, 180);
+    }
+
+    function notify(nextMode) {
+        const title = modeLabelMap[nextMode] + " started";
+        const body = nextMode === "focus" ? "Back to focused work." : "Take a break now.";
+
+        if ("Notification" in window) {
+            if (Notification.permission === "granted") {
+                new Notification(title, { body: body });
+            } else if (Notification.permission !== "denied") {
+                Notification.requestPermission();
+            }
+        }
+    }
+
+    function updateMeta() {
+        cycleEl.textContent = String(Math.floor(completedFocus / 4) + 1);
+        todayCountEl.textContent = String(getTodayCount());
+
+        if (mode === "focus") {
+            const isLong = (completedFocus + 1) % 4 === 0;
+            nextEl.textContent = isLong ? "Long (15m)" : "Short (5m)";
+        } else {
+            nextEl.textContent = "Focus (25m)";
+        }
+    }
+
+    function render() {
+        modeEl.textContent = modeLabelMap[mode];
+        timeEl.textContent = formatTime(secondsLeft);
+        updateMeta();
+        saveState();
+    }
+
+    function switchMode() {
+        if (mode === "focus") {
+            completedFocus += 1;
+            incrementTodayCount();
+            mode = completedFocus % 4 === 0 ? "long" : "short";
+        } else {
+            mode = "focus";
+        }
+
+        secondsLeft = POMODORO_DURATIONS[mode];
+        render();
+        beep();
+        notify(mode);
+    }
+
+    function tick() {
+        if (secondsLeft > 0) {
+            secondsLeft -= 1;
+            render();
+            return;
+        }
+
+        switchMode();
+    }
+
+    function startTimer() {
+        if (timer !== null) return;
+        running = true;
+        timer = setInterval(tick, 1000);
+        saveState();
+    }
+
+    function pauseTimer() {
+        if (timer === null) return;
+        clearInterval(timer);
+        timer = null;
+        running = false;
+        saveState();
+    }
+
+    function resetTimer() {
+        pauseTimer();
+        mode = "focus";
+        secondsLeft = POMODORO_DURATIONS.focus;
+        completedFocus = 0;
+        running = false;
+        render();
+    }
+
+    startBtn.addEventListener("click", startTimer);
+    pauseBtn.addEventListener("click", pauseTimer);
+    resetBtn.addEventListener("click", resetTimer);
+
+    restoreState();
+    if (running && timer === null) {
+        startTimer();
+    }
+    render();
+})();
+</script>
+
+{% endblock %}

@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card ai-hero">
+<p class="ai-kicker">Smart Strategy</p>
+<h2>AI Study Recommendation</h2>
+<p class="ai-subtitle">Auto-adjusted plan based on your exam timeline, group focus, and baseline preparation level.</p>
+
+<div class="ai-stat-row">
+<div class="ai-stat-chip">
+<span class="ai-stat-label">Days Left</span>
+<span class="ai-stat-value">{{ form_data.days_left }}</span>
+</div>
+<div class="ai-stat-chip">
+<span class="ai-stat-label">Daily Hours</span>
+<span class="ai-stat-value">{{ hours_to_hm(form_data.hours_per_day) }}</span>
+</div>
+</div>
+</div>
+
+<div class="card ai-form-card">
+<form method="POST" class="ai-form-grid">
+<div>
+<label>Days Left (Auto from Attempt Date)</label>
+<input type="number" name="days_left" value="{{ form_data.days_left }}" readonly>
+</div>
+
+<div>
+<label>Hours Per Day</label>
+<input type="number" name="hours_per_day" min="1" step="0.5" value="{{ form_data.hours_per_day }}">
+</div>
+
+<div>
+<label>Group Type</label>
+<select name="group_type">
+<option value="G1" {% if form_data.group_type == 'G1' %}selected{% endif %}>G1</option>
+<option value="G2" {% if form_data.group_type == 'G2' %}selected{% endif %}>G2</option>
+<option value="Both" {% if form_data.group_type == 'Both' %}selected{% endif %}>Both</option>
+</select>
+</div>
+
+<div>
+<label>Base Level</label>
+<select name="base_level">
+<option value="Low" {% if form_data.base_level == 'Low' %}selected{% endif %}>Low</option>
+<option value="Medium" {% if form_data.base_level == 'Medium' %}selected{% endif %}>Medium</option>
+<option value="High" {% if form_data.base_level == 'High' %}selected{% endif %}>High</option>
+</select>
+</div>
+
+<button class="ai-generate-btn">Generate Plan</button>
+</form>
+</div>
+
+{% if result %}
+<div class="card">
+<h3>Phase Split</h3>
+<div class="ai-phase-grid">
+{% for phase, pct in result.phase_split.items() %}
+<div class="ai-phase-item">
+<div class="ai-phase-title">{{ phase|upper }}</div>
+<div class="ai-phase-pct">{{ (pct * 100)|round(1) }}%</div>
+<div class="ai-phase-bar">
+<div class="ai-phase-fill" style="width: {{ (pct * 100)|round(1) }}%;"></div>
+</div>
+</div>
+{% endfor %}
+</div>
+</div>
+
+<div class="card">
+<h3>Subject Time Allocation</h3>
+<table class="table">
+<tr>
+<th>Subject</th>
+<th>Weight %</th>
+<th>Daily Hours</th>
+</tr>
+{% for sub, pct in result.subject_allocation.items() %}
+<tr>
+<td>{{ sub }}</td>
+<td>{{ (pct * 100)|round(1) }}%</td>
+<td>{{ hours_to_hm(pct * form_data.hours_per_day) }}</td>
+</tr>
+{% endfor %}
+</table>
+</div>
+
+<div class="card ai-time-breakdown-card">
+<h3>Daily Time Breakdown</h3>
+<div class="ai-time-grid">
+<div class="ai-time-item"><span>Learning</span><b>{{ hours_to_hm(result.daily_split.learning) }}</b></div>
+<div class="ai-time-item"><span>Practice</span><b>{{ hours_to_hm(result.daily_split.practice) }}</b></div>
+<div class="ai-time-item"><span>Revision</span><b>{{ hours_to_hm(result.daily_split.revision) }}</b></div>
+<div class="ai-time-item"><span>Recall</span><b>{{ hours_to_hm(result.daily_split.recall) }}</b></div>
+</div>
+</div>
+
+<div class="card">
+<h3>7-Day Rotation Preview</h3>
+{% for day_plan in result.daily_plans %}
+<div class="ai-day-plan">
+<div class="ai-day-header">
+<b>Day {{ day_plan.day }}</b>
+<span>Revision: {{ hours_to_hm(day_plan.revision_block) }}</span>
+<span>Recall: {{ hours_to_hm(day_plan.recall_block) }}</span>
+</div>
+<ul>
+{% for sub in day_plan.subjects %}
+<li>{{ sub.name }}: Learning {{ hours_to_hm(sub.learning_hours) }}, Practice {{ hours_to_hm(sub.practice_hours) }}</li>
+{% endfor %}
+</ul>
+</div>
+{% endfor %}
+</div>
+
+{% if result.low_time_topics %}
+<div class="card">
+<h3>Low-Time Priority Topics</h3>
+{% for subject, topics in result.low_time_topics.items() %}
+<p><b>{{ subject }}</b>: {{ topics|join(", ") }}</p>
+{% endfor %}
+</div>
+{% endif %}
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+    <h2>Edit Profile</h2>
+
+    <form method="POST">
+
+        <label>Name</label>
+        <input type="text" name="name" value="{{ student[0] }}" required>
+
+        <label>Attempt</label>
+        <input type="text" name="attempt" value="{{ student[1] }}" required>
+
+        <label>Attempt Date</label>
+        <input type="date" name="attempt_date" value="{{ student[2] }}" required>
+
+        <button type="submit">Update Profile</button>
+
+    </form>
+</div>
+
+{% endblock %}

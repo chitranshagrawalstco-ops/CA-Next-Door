@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+    <h2>Student Setup</h2>
+
+    <form method="POST">
+        <label>Name</label>
+        <input type="text" name="name" required>
+
+        <label>Attempt</label>
+        <input type="text" name="attempt" placeholder="e.g. May 2026" required>
+
+        <label>Attempt Date</label>
+        <input type="date" name="attempt_date" required>
+
+        <button type="submit">Save</button>
+    </form>
+</div>
+
+{% endblock %}
