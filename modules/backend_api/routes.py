@@ -6,12 +6,14 @@ from flask import Blueprint, jsonify, request
 from config import DB_NAME
 from core.database import get_connection
 from core.google_api import (
-    bind_machine,
     download_user_db,
     ensure_user_drive_folder,
+    upload_user_db,
+)
+from core.supabase_api import (
+    bind_machine,
     get_user_row,
     set_drive_status,
-    upload_user_db,
 )
 
 

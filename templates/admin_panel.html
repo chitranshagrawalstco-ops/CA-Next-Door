@@ -9,23 +9,22 @@
         <h3>Branding</h3>
 
         <label>App Title</label>
-        <input
-            name="app_title"
-            value="{{ admin_config.app_title if admin_config else 'CA Next Door' }}"
-        >
+        <input name="app_title" value="{{ admin_config.app_title if admin_config else 'CA Next Door' }}">
 
         <label>Footer Text</label>
-        <input
-            name="footer_text"
-            value="{{ admin_config.footer_text if admin_config else 'Built by Chitransh & Yashashvi-Version 1.1' }}"
-        >
+        <input name="footer_text"
+            value="{{ admin_config.footer_text if admin_config else 'Built by Chitransh & Yashashvi-Version 1.1' }}">
 
         <label>Primary Accent Preset</label>
         <select name="accent_preset">
-            <option value="blue" {% if admin_config and admin_config.accent_preset == 'blue' %}selected{% endif %}>Blue</option>
-            <option value="green" {% if admin_config and admin_config.accent_preset == 'green' %}selected{% endif %}>Green</option>
-            <option value="sunset" {% if admin_config and admin_config.accent_preset == 'sunset' %}selected{% endif %}>Sunset</option>
-            <option value="slate" {% if admin_config and admin_config.accent_preset == 'slate' %}selected{% endif %}>Slate</option>
+            <option value="blue" {% if admin_config and admin_config.accent_preset=='blue' %}selected{% endif %}>Blue
+            </option>
+            <option value="green" {% if admin_config and admin_config.accent_preset=='green' %}selected{% endif %}>Green
+            </option>
+            <option value="sunset" {% if admin_config and admin_config.accent_preset=='sunset' %}selected{% endif %}>
+                Sunset</option>
+            <option value="slate" {% if admin_config and admin_config.accent_preset=='slate' %}selected{% endif %}>Slate
+            </option>
         </select>
 
         <label>Logo Upload</label>
@@ -36,83 +35,57 @@
         <h3>License Settings</h3>
 
         <label>License Key</label>
-        <input
-            name="license_key"
-            value="{{ admin_config.license_key if admin_config else 'CAFINAL-2026-PRO' }}"
-        >
+        <input name="license_key" value="{{ admin_config.license_key if admin_config else 'CAFINAL-2026-PRO' }}">
 
         <label>License Validity (Days)</label>
-        <input
-            name="license_valid_days"
-            type="number"
-            min="1"
-            value="{{ admin_config.license_valid_days if admin_config else 365 }}"
-        >
+        <input name="license_valid_days" type="number" min="1"
+            value="{{ admin_config.license_valid_days if admin_config else 365 }}">
 
-        <h3>Google API Settings</h3>
-        <p class="page-subtext">Direct Google Sheets/Drive API config using your service-account JSON key.</p>
+        <h3>Supabase Database Settings</h3>
+        <p class="page-subtext">Supabase project URL and service_role API key to manage user licenses and data directly
+            in PostgreSQL.</p>
 
-        <label>Service Account JSON Path</label>
-        <input
-            name="google_credentials_path"
-            placeholder="C:\\path\\to\\service-account.json"
-            value="{{ admin_config.google_credentials_path if admin_config else '' }}"
-        >
+        <label>Supabase Project URL</label>
+        <input name="supabase_url" placeholder="https://yourproject.supabase.co"
+            value="{{ admin_config.supabase_url if admin_config else '' }}">
+
+        <label>Supabase Service Role Key</label>
+        <input name="supabase_key" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+            value="{{ admin_config.supabase_key if admin_config else '' }}">
 
         <label>Spreadsheet ID</label>
-        <input
-            name="google_sheet_id"
-            placeholder="1AbCdEf... (from sheet URL)"
-            value="{{ admin_config.google_sheet_id if admin_config else '' }}"
-        >
+        <input name="google_sheet_id" placeholder="1AbCdEf... (from sheet URL)"
+            value="{{ admin_config.google_sheet_id if admin_config else '' }}">
 
         <label>Users Sheet Tab Name</label>
-        <input
-            name="google_sheet_tab"
-            placeholder="users"
-            value="{{ admin_config.google_sheet_tab if admin_config else 'users' }}"
-        >
+        <input name="google_sheet_tab" placeholder="users"
+            value="{{ admin_config.google_sheet_tab if admin_config else 'users' }}">
 
         <label>Google API Key (Sheets Data API)</label>
-        <input
-            name="google_api_key"
-            placeholder="AIza..."
-            value="{{ admin_config.google_api_key if admin_config else '' }}"
-        >
+        <input name="google_api_key" placeholder="AIza..."
+            value="{{ admin_config.google_api_key if admin_config else '' }}">
 
         <h3>Backend API (for distributed clients)</h3>
         <p class="page-subtext">If set, client apps call this backend API instead of direct Google API.</p>
 
         <label>Backend API URL</label>
-        <input
-            name="backend_api_url"
-            placeholder="https://your-domain.com/api/v1/auth"
-            value="{{ admin_config.backend_api_url if admin_config else '' }}"
-        >
+        <input name="backend_api_url" placeholder="https://your-domain.com/api/v1/auth"
+            value="{{ admin_config.backend_api_url if admin_config else '' }}">
 
         <label>Backend API Key</label>
-        <input
-            name="backend_api_key"
-            placeholder="Set a strong shared API key"
-            value="{{ admin_config.backend_api_key if admin_config else '' }}"
-        >
+        <input name="backend_api_key" placeholder="Set a strong shared API key"
+            value="{{ admin_config.backend_api_key if admin_config else '' }}">
 
         <h3>Activation Alerts (Telegram)</h3>
         <p class="page-subtext">Optional: get Telegram alert when a user activates a license.</p>
 
         <label>Telegram Bot Token</label>
-        <input
-            name="telegram_bot_token"
-            placeholder="8421839445:AA..."
-            value="{{ admin_config.telegram_bot_token if admin_config else '' }}"
-        >
+        <input name="telegram_bot_token" placeholder="8421839445:AA..."
+            value="{{ admin_config.telegram_bot_token if admin_config else '' }}">
 
         <label>Telegram Chat ID</label>
-        <input
-            name="telegram_chat_id"
-            placeholder="1055501433"
-            value="{{ admin_config.telegram_chat_id if admin_config else '' }}"
-        >
+        <input name="telegram_chat_id" placeholder="1055501433"
+            value="{{ admin_config.telegram_chat_id if admin_config else '' }}">
 
         <h3>Change Admin Password</h3>
         <p class="page-subtext">Leave password fields blank if you do not want to change password.</p>

@@ -13,7 +13,7 @@ import urllib.request
 import urllib.parse
 from werkzeug.utils import secure_filename
 
-from flask import Blueprint, render_template, request, redirect, flash
+from flask import Blueprint, render_template, request, redirect, flash, make_response
 from core.database import get_connection
 from datetime import datetime, timedelta
 from core.auth_sync import (
@@ -227,7 +227,7 @@ def get_admin_config():
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("""
-    SELECT id, license_key, license_valid_days, admin_password, app_title, footer_text, logo_filename, accent_preset, gsheets_webhook_url, google_credentials_path, google_sheet_id, google_sheet_tab, google_api_key, backend_api_url, backend_api_key, telegram_bot_token, telegram_chat_id
+    SELECT id, license_key, license_valid_days, admin_password, app_title, footer_text, logo_filename, accent_preset, gsheets_webhook_url, google_credentials_path, google_sheet_id, google_sheet_tab, google_api_key, backend_api_url, backend_api_key, telegram_bot_token, telegram_chat_id, supabase_url, supabase_key
     FROM admin_settings
     ORDER BY id DESC
     LIMIT 1
@@ -253,7 +253,9 @@ def get_admin_config():
             "backend_api_url": "",
             "backend_api_key": "",
             "telegram_bot_token": DEFAULT_TELEGRAM_BOT_TOKEN,
-            "telegram_chat_id": DEFAULT_TELEGRAM_CHAT_ID
+            "telegram_chat_id": DEFAULT_TELEGRAM_CHAT_ID,
+            "supabase_url": "",
+            "supabase_key": ""
         }
 
     try:
@@ -281,7 +283,9 @@ def get_admin_config():
         "backend_api_url": row[13] if row[13] else "",
         "backend_api_key": row[14] if row[14] else "",
         "telegram_bot_token": row[15] if row[15] else DEFAULT_TELEGRAM_BOT_TOKEN,
-        "telegram_chat_id": row[16] if row[16] else DEFAULT_TELEGRAM_CHAT_ID
+        "telegram_chat_id": row[16] if row[16] else DEFAULT_TELEGRAM_CHAT_ID,
+        "supabase_url": row[17] if row[17] else "",
+        "supabase_key": row[18] if row[18] else ""
     }
 
 
@@ -633,7 +637,6 @@ def home():
     if not is_license_active():
      return redirect("/activate")
 
-
     student = get_student()
 
     if not student:
@@ -854,9 +857,8 @@ def home():
         avg_score=avg_score,
         test_count=test_count,
         chart_points=chart_points,
+        today_revisions=[],
         overdue_revisions=overdue_revisions
-
-
     )
 
 
@@ -1552,6 +1554,8 @@ def admin_panel():
         backend_api_key = request.form.get("backend_api_key", "").strip()
         telegram_bot_token = request.form.get("telegram_bot_token", "").strip()
         telegram_chat_id = request.form.get("telegram_chat_id", "").strip()
+        supabase_url = request.form.get("supabase_url", "").strip()
+        supabase_key = request.form.get("supabase_key", "").strip()
         accent_preset = request.form.get("accent_preset", DEFAULT_ACCENT_PRESET).strip().lower()
         if accent_preset not in {"blue", "green", "sunset", "slate"}:
             accent_preset = DEFAULT_ACCENT_PRESET
@@ -1584,6 +1588,8 @@ def admin_panel():
             config["backend_api_key"] = backend_api_key
             config["telegram_bot_token"] = telegram_bot_token
             config["telegram_chat_id"] = telegram_chat_id
+            config["supabase_url"] = supabase_url
+            config["supabase_key"] = supabase_key
             return render_template("admin_panel.html", admin_config=config)
 
         password_to_save = config["admin_password"]
@@ -1629,6 +1635,8 @@ def admin_panel():
                     config["backend_api_key"] = backend_api_key
                     config["telegram_bot_token"] = telegram_bot_token
                     config["telegram_chat_id"] = telegram_chat_id
+                    config["supabase_url"] = supabase_url
+                    config["supabase_key"] = supabase_key
                     return render_template("admin_panel.html", admin_config=config)
 
                 upload_dir = os.path.join("static", "uploads")
@@ -1639,17 +1647,17 @@ def admin_panel():
             if config["id"] is None:
                 cur.execute("""
                 INSERT INTO admin_settings
-                (theme_color, font_size, feature_tasks, feature_links, feature_file_manager, license_key, license_valid_days, admin_password, app_title, footer_text, logo_filename, accent_preset, gsheets_webhook_url, google_credentials_path, google_sheet_id, google_sheet_tab, google_api_key, backend_api_url, backend_api_key, telegram_bot_token, telegram_chat_id)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, ("#4f46e5", "14px", 1, 1, 1, license_key, license_valid_days, password_to_save, app_title, footer_text, logo_filename, accent_preset, gsheets_webhook_url, google_credentials_path, google_sheet_id, google_sheet_tab, google_api_key, backend_api_url, backend_api_key, telegram_bot_token, telegram_chat_id))
+                (theme_color, font_size, feature_tasks, feature_links, feature_file_manager, license_key, license_valid_days, admin_password, app_title, footer_text, logo_filename, accent_preset, gsheets_webhook_url, google_credentials_path, google_sheet_id, google_sheet_tab, google_api_key, backend_api_url, backend_api_key, telegram_bot_token, telegram_chat_id, supabase_url, supabase_key)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, ("#4f46e5", "14px", 1, 1, 1, license_key, license_valid_days, password_to_save, app_title, footer_text, logo_filename, accent_preset, gsheets_webhook_url, google_credentials_path, google_sheet_id, google_sheet_tab, google_api_key, backend_api_url, backend_api_key, telegram_bot_token, telegram_chat_id, supabase_url, supabase_key))
                 config_id = cur.lastrowid
             else:
                 config_id = config["id"]
                 cur.execute("""
                 UPDATE admin_settings
-                SET license_key=?, license_valid_days=?, admin_password=?, app_title=?, footer_text=?, logo_filename=?, accent_preset=?, gsheets_webhook_url=?, google_credentials_path=?, google_sheet_id=?, google_sheet_tab=?, google_api_key=?, backend_api_url=?, backend_api_key=?, telegram_bot_token=?, telegram_chat_id=?
+                SET license_key=?, license_valid_days=?, admin_password=?, app_title=?, footer_text=?, logo_filename=?, accent_preset=?, gsheets_webhook_url=?, google_credentials_path=?, google_sheet_id=?, google_sheet_tab=?, google_api_key=?, backend_api_url=?, backend_api_key=?, telegram_bot_token=?, telegram_chat_id=?, supabase_url=?, supabase_key=?
                 WHERE id=?
-                """, (license_key, license_valid_days, password_to_save, app_title, footer_text, logo_filename, accent_preset, gsheets_webhook_url, google_credentials_path, google_sheet_id, google_sheet_tab, google_api_key, backend_api_url, backend_api_key, telegram_bot_token, telegram_chat_id, config_id))
+                """, (license_key, license_valid_days, password_to_save, app_title, footer_text, logo_filename, accent_preset, gsheets_webhook_url, google_credentials_path, google_sheet_id, google_sheet_tab, google_api_key, backend_api_url, backend_api_key, telegram_bot_token, telegram_chat_id, supabase_url, supabase_key, config_id))
 
             conn.commit()
             conn.close()

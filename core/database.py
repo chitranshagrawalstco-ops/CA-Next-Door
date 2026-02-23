@@ -1,5 +1,11 @@
 import sqlite3
-from config import DB_NAME
+from config import (
+    DB_NAME,
+    DEFAULT_BACKEND_API_KEY,
+    DEFAULT_BACKEND_API_URL,
+    DEFAULT_GOOGLE_SHEET_ID,
+    DEFAULT_GOOGLE_SHEET_TAB,
+)
 
 def get_connection():
     return sqlite3.connect(DB_NAME)
@@ -177,7 +183,7 @@ CREATE TABLE IF NOT EXISTS license (
      cur.execute("ALTER TABLE license ADD COLUMN expiry_date TEXT")
     except:
      pass
-# ADMIN SETTINGS
+    # ADMIN SETTINGS
     cur.execute("""
 CREATE TABLE IF NOT EXISTS admin_settings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -201,7 +207,9 @@ CREATE TABLE IF NOT EXISTS admin_settings (
     backend_api_url TEXT,
     backend_api_key TEXT,
     telegram_bot_token TEXT,
-    telegram_chat_id TEXT
+    telegram_chat_id TEXT,
+    supabase_url TEXT,
+    supabase_key TEXT
 )
 """)
     # ADD LICENSE CONFIG COLUMNS TO ADMIN SETTINGS IF NOT EXISTS
@@ -269,6 +277,24 @@ CREATE TABLE IF NOT EXISTS admin_settings (
         cur.execute("ALTER TABLE admin_settings ADD COLUMN telegram_chat_id TEXT")
     except:
         pass
+    try:
+        cur.execute("ALTER TABLE admin_settings ADD COLUMN supabase_url TEXT")
+    except:
+        pass
+    try:
+        cur.execute("ALTER TABLE admin_settings ADD COLUMN supabase_key TEXT")
+    except:
+        pass
+    # Bootstrap one default settings row for fresh installs, so login works
+    # out-of-the-box without manual admin setup on each new machine.
+    cur.execute("SELECT COUNT(1) FROM admin_settings")
+    settings_count = cur.fetchone()[0]
+    if settings_count == 0:
+        cur.execute("""
+        INSERT INTO admin_settings
+        (theme_color, font_size, feature_tasks, feature_links, feature_file_manager, license_key, license_valid_days, admin_password, app_title, footer_text, logo_filename, accent_preset, gsheets_webhook_url, google_credentials_path, google_sheet_id, google_sheet_tab, google_api_key, backend_api_url, backend_api_key, telegram_bot_token, telegram_chat_id, supabase_url, supabase_key)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, ("#4f46e5", "14px", 1, 1, 1, "CAFINAL-2026-PRO", 365, "Admin@123", "CA Next Door", "Built by Chitransh & Yashashvi-Version 1.1", "", "blue", "", "", DEFAULT_GOOGLE_SHEET_ID, DEFAULT_GOOGLE_SHEET_TAB, "", DEFAULT_BACKEND_API_URL, DEFAULT_BACKEND_API_KEY, "", "", "", ""))
     # REVISION SCHEDULER
     cur.execute("""
 CREATE TABLE IF NOT EXISTS revision_schedule (

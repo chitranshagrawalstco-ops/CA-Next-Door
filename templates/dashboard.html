@@ -7,18 +7,18 @@
     <div class="card db-header-card">
         <div class="db-header-top">
             <div>
-                <h2>Welcome {{ name }}</h2>
+                <h2>Welcome, {{ name }}</h2>
                 <p>Attempt: {{ attempt }}</p>
             </div>
 
             <div class="db-license-inline">
                 {% if license_days is not none and license_days >= 0 %}
-                    <span class="db-license-pill ok">License Active</span>
-                    <span class="db-license-days">{{ license_days }} days left</span>
+                <span class="db-license-pill ok">License Active</span>
+                <span class="db-license-days">{{ license_days }} days left</span>
                 {% elif license_days is not none %}
-                    <span class="db-license-pill bad">License Expired</span>
+                <span class="db-license-pill bad">License Expired</span>
                 {% else %}
-                    <span class="db-license-pill bad">License Missing</span>
+                <span class="db-license-pill bad">License Missing</span>
                 {% endif %}
             </div>
         </div>
@@ -78,44 +78,43 @@
             <div class="card db-card db-scroll-card">
                 <h3>Today's Tasks</h3>
                 <ul class="db-list">
-                {% for t in today_tasks %}
+                    {% for t in today_tasks %}
                     <li>{{ t[0] }}</li>
-                {% else %}
+                    {% else %}
                     <li>No tasks for today.</li>
-                {% endfor %}
+                    {% endfor %}
                 </ul>
             </div>
 
             <div class="card db-card db-scroll-card">
                 <h3>Today's Revisions</h3>
                 <ul class="db-list">
-                {% for r in today_revisions %}
+                    {% for r in today_revisions %}
                     <li>
                         <b>{{ r[0] }}</b> - {{ r[1] }}
                         <span class="db-rev-tag">{{ r[2] }}</span>
                     </li>
-                {% else %}
+                    {% else %}
                     <li>No revisions scheduled today.</li>
-                {% endfor %}
+                    {% endfor %}
                 </ul>
             </div>
 
             <div class="card db-card db-scroll-card">
                 <h3>Overdue Revisions</h3>
                 <ul class="db-list db-overdue-list">
-                {% for o in overdue_revisions|default([]) %}
-                    {% if loop.index <= 8 %}
-                    <li>
+                    {% for o in overdue_revisions|default([]) %}
+                    {% if loop.index <= 8 %} <li>
                         <span class="db-overdue-stage">{{ o.stage }}</span>
                         <span class="db-overdue-days">
                             {% if o.days is not none %}{{ o.days }} days{% else %}unknown{% endif %}
                         </span>
                         <div class="db-overdue-text">{{ o.subject }} - {{ o.chapter }}</div>
-                    </li>
-                    {% endif %}
-                {% else %}
-                    <li>No overdue revisions.</li>
-                {% endfor %}
+                        </li>
+                        {% endif %}
+                        {% else %}
+                        <li>No overdue revisions.</li>
+                        {% endfor %}
                 </ul>
             </div>
 
@@ -142,12 +141,8 @@
 
                         {% for p in chart_points %}
                         {% if not loop.first %}
-                        <line
-                            x1="{{ chart_points[loop.index0 - 1].x }}"
-                            y1="{{ chart_points[loop.index0 - 1].y }}"
-                            x2="{{ p.x }}"
-                            y2="{{ p.y }}"
-                            class="trend-line"></line>
+                        <line x1="{{ chart_points[loop.index0 - 1].x }}" y1="{{ chart_points[loop.index0 - 1].y }}"
+                            x2="{{ p.x }}" y2="{{ p.y }}" class="trend-line"></line>
                         {% endif %}
                         {% endfor %}
 
@@ -190,7 +185,7 @@
                     </thead>
 
                     <tbody>
-                    {% for p in progress %}
+                        {% for p in progress %}
                         <tr>
                             <td>{{ p[0] }}</td>
                             <td class="center">{{ ((p[2] or 0)/(p[1] or 1)*100)|round(1) }}%</td>
@@ -198,7 +193,7 @@
                             <td class="center">{{ ((p[4] or 0)/(p[1] or 1)*100)|round(1) }}%</td>
                             <td class="center">{{ ((p[5] or 0)/(p[1] or 1)*100)|round(1) }}%</td>
                         </tr>
-                    {% endfor %}
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>
@@ -210,220 +205,242 @@
 </div>
 
 <script>
-(function () {
-    const POMODORO_DURATIONS = {
-        focus: 25 * 60,
-        short: 5 * 60,
-        long: 15 * 60
-    };
-
-    const modeLabelMap = {
-        focus: "Focus Session",
-        short: "Short Break",
-        long: "Long Break"
-    };
-
-    const timeEl = document.getElementById("pomodoro-time");
-    const modeEl = document.getElementById("pomodoro-mode");
-    const cycleEl = document.getElementById("pomodoro-cycle");
-    const nextEl = document.getElementById("pomodoro-next");
-    const todayCountEl = document.getElementById("pomodoro-today-count");
-    const startBtn = document.getElementById("pomodoro-start");
-    const pauseBtn = document.getElementById("pomodoro-pause");
-    const resetBtn = document.getElementById("pomodoro-reset");
-    const storageKey = "ca_next_door_pomodoro_state";
-    const todayKeyPrefix = "ca_next_door_pomodoro_daily_";
-
-    if (!timeEl || !modeEl || !cycleEl || !nextEl || !todayCountEl || !startBtn || !pauseBtn || !resetBtn) {
-        return;
-    }
-
-    let mode = "focus";
-    let secondsLeft = POMODORO_DURATIONS.focus;
-    let timer = null;
-    let completedFocus = 0;
-    let running = false;
-
-    function getTodayKey() {
-        const d = new Date();
-        const y = d.getFullYear();
-        const m = String(d.getMonth() + 1).padStart(2, "0");
-        const day = String(d.getDate()).padStart(2, "0");
-        return todayKeyPrefix + y + "-" + m + "-" + day;
-    }
-
-    function getTodayCount() {
-        const raw = localStorage.getItem(getTodayKey());
-        const val = parseInt(raw || "0", 10);
-        return Number.isNaN(val) ? 0 : val;
-    }
-
-    function incrementTodayCount() {
-        const next = getTodayCount() + 1;
-        localStorage.setItem(getTodayKey(), String(next));
-    }
-
-    function saveState() {
-        const payload = {
-            mode: mode,
-            secondsLeft: secondsLeft,
-            completedFocus: completedFocus,
-            running: running,
-            savedAt: Date.now()
+    (function () {
+        const POMODORO_DURATIONS = {
+            focus: 25 * 60,
+            short: 5 * 60,
+            long: 15 * 60
         };
-        localStorage.setItem(storageKey, JSON.stringify(payload));
-    }
 
-    function restoreState() {
-        try {
-            const raw = localStorage.getItem(storageKey);
-            if (!raw) return;
-            const data = JSON.parse(raw);
-            if (!data || !POMODORO_DURATIONS[data.mode]) return;
+        const modeLabelMap = {
+            focus: "Focus Session",
+            short: "Short Break",
+            long: "Long Break"
+        };
 
-            mode = data.mode;
-            secondsLeft = parseInt(data.secondsLeft, 10);
-            completedFocus = parseInt(data.completedFocus, 10);
-            running = !!data.running;
+        const timeEl = document.getElementById("pomodoro-time");
+        const modeEl = document.getElementById("pomodoro-mode");
+        const cycleEl = document.getElementById("pomodoro-cycle");
+        const nextEl = document.getElementById("pomodoro-next");
+        const todayCountEl = document.getElementById("pomodoro-today-count");
+        const startBtn = document.getElementById("pomodoro-start");
+        const pauseBtn = document.getElementById("pomodoro-pause");
+        const resetBtn = document.getElementById("pomodoro-reset");
+        const storageKey = "ca_next_door_pomodoro_state";
+        const todayKeyPrefix = "ca_next_door_pomodoro_daily_";
 
-            if (Number.isNaN(secondsLeft) || secondsLeft < 0 || secondsLeft > POMODORO_DURATIONS[mode]) {
-                secondsLeft = POMODORO_DURATIONS[mode];
-            }
-            if (Number.isNaN(completedFocus) || completedFocus < 0) {
-                completedFocus = 0;
-            }
-
-            if (running && data.savedAt) {
-                const elapsed = Math.floor((Date.now() - data.savedAt) / 1000);
-                secondsLeft = Math.max(secondsLeft - elapsed, 0);
-            }
-        } catch (err) {
-            mode = "focus";
-            secondsLeft = POMODORO_DURATIONS.focus;
-            completedFocus = 0;
-            running = false;
-        }
-    }
-
-    function formatTime(seconds) {
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return String(mins).padStart(2, "0") + ":" + String(secs).padStart(2, "0");
-    }
-
-    function beep() {
-        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-        if (!AudioContextClass) return;
-
-        const ctx = new AudioContextClass();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-
-        osc.type = "sine";
-        osc.frequency.value = 880;
-        gain.gain.value = 0.08;
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-
-        osc.start();
-        setTimeout(function () {
-            osc.stop();
-            ctx.close();
-        }, 180);
-    }
-
-    function notify(nextMode) {
-        const title = modeLabelMap[nextMode] + " started";
-        const body = nextMode === "focus" ? "Back to focused work." : "Take a break now.";
-
-        if ("Notification" in window) {
-            if (Notification.permission === "granted") {
-                new Notification(title, { body: body });
-            } else if (Notification.permission !== "denied") {
-                Notification.requestPermission();
-            }
-        }
-    }
-
-    function updateMeta() {
-        cycleEl.textContent = String(Math.floor(completedFocus / 4) + 1);
-        todayCountEl.textContent = String(getTodayCount());
-
-        if (mode === "focus") {
-            const isLong = (completedFocus + 1) % 4 === 0;
-            nextEl.textContent = isLong ? "Long (15m)" : "Short (5m)";
-        } else {
-            nextEl.textContent = "Focus (25m)";
-        }
-    }
-
-    function render() {
-        modeEl.textContent = modeLabelMap[mode];
-        timeEl.textContent = formatTime(secondsLeft);
-        updateMeta();
-        saveState();
-    }
-
-    function switchMode() {
-        if (mode === "focus") {
-            completedFocus += 1;
-            incrementTodayCount();
-            mode = completedFocus % 4 === 0 ? "long" : "short";
-        } else {
-            mode = "focus";
-        }
-
-        secondsLeft = POMODORO_DURATIONS[mode];
-        render();
-        beep();
-        notify(mode);
-    }
-
-    function tick() {
-        if (secondsLeft > 0) {
-            secondsLeft -= 1;
-            render();
+        if (!timeEl || !modeEl || !cycleEl || !nextEl || !todayCountEl || !startBtn || !pauseBtn || !resetBtn) {
             return;
         }
 
-        switchMode();
-    }
+        let mode = "focus";
+        let secondsLeft = POMODORO_DURATIONS.focus;
+        let timer = null;
+        let completedFocus = 0;
+        let running = false;
 
-    function startTimer() {
-        if (timer !== null) return;
-        running = true;
-        timer = setInterval(tick, 1000);
-        saveState();
-    }
+        function getTodayKey() {
+            const d = new Date();
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, "0");
+            const day = String(d.getDate()).padStart(2, "0");
+            return todayKeyPrefix + y + "-" + m + "-" + day;
+        }
 
-    function pauseTimer() {
-        if (timer === null) return;
-        clearInterval(timer);
-        timer = null;
-        running = false;
-        saveState();
-    }
+        function getTodayCount() {
+            const raw = localStorage.getItem(getTodayKey());
+            const val = parseInt(raw || "0", 10);
+            return Number.isNaN(val) ? 0 : val;
+        }
 
-    function resetTimer() {
-        pauseTimer();
-        mode = "focus";
-        secondsLeft = POMODORO_DURATIONS.focus;
-        completedFocus = 0;
-        running = false;
+        function incrementTodayCount() {
+            const next = getTodayCount() + 1;
+            localStorage.setItem(getTodayKey(), String(next));
+        }
+
+        function saveState() {
+            const payload = {
+                mode: mode,
+                secondsLeft: secondsLeft,
+                completedFocus: completedFocus,
+                running: running,
+                savedAt: Date.now()
+            };
+            localStorage.setItem(storageKey, JSON.stringify(payload));
+        }
+
+        function restoreState() {
+            try {
+                const raw = localStorage.getItem(storageKey);
+                if (!raw) return;
+                const data = JSON.parse(raw);
+                if (!data) return;
+
+                mode = data.mode || "focus";
+                if (!POMODORO_DURATIONS[mode]) return;
+
+                secondsLeft = parseInt(data.secondsLeft, 10);
+                completedFocus = parseInt(data.completedFocus, 10);
+                running = !!data.running;
+
+                if (Number.isNaN(secondsLeft) || secondsLeft < 0 || secondsLeft > POMODORO_DURATIONS[mode]) {
+                    secondsLeft = POMODORO_DURATIONS[mode];
+                }
+                if (Number.isNaN(completedFocus) || completedFocus < 0) {
+                    completedFocus = 0;
+                }
+
+                if (running && data.savedAt) {
+                    const elapsed = Math.floor((Date.now() - data.savedAt) / 1000);
+                    secondsLeft = Math.max(secondsLeft - elapsed, 0);
+                }
+            } catch (err) {
+                mode = "focus";
+                secondsLeft = POMODORO_DURATIONS.focus;
+                completedFocus = 0;
+                running = false;
+            }
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return String(mins).padStart(2, "0") + ":" + String(secs).padStart(2, "0");
+        }
+
+        function beep() {
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContextClass) return;
+
+            const ctx = new AudioContextClass();
+
+            function playTone(freq, startTime, duration) {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+
+                osc.type = "sine";
+                osc.frequency.value = freq;
+
+                // Attack and release to avoid audio clicking
+                gain.gain.setValueAtTime(0, startTime);
+                gain.gain.linearRampToValueAtTime(0.1, startTime + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                osc.start(startTime);
+                osc.stop(startTime + duration);
+            }
+
+            // Play a triple beep sequence typical of alarms
+            const now = ctx.currentTime;
+            playTone(880, now, 0.2);
+            playTone(880, now + 0.3, 0.2);
+            playTone(880, now + 0.6, 0.3);
+
+            // Clean up context after sound finishes playing
+            setTimeout(() => {
+                if (ctx.state !== "closed") ctx.close();
+            }, 1200);
+        }
+
+        function notify(nextMode) {
+            const title = modeLabelMap[nextMode] + " started";
+            const body = nextMode === "focus" ? "Back to focused work." : "Take a break now.";
+
+            if ("Notification" in window) {
+                if (Notification.permission === "granted") {
+                    new Notification(title, { body: body });
+                } else if (Notification.permission !== "denied") {
+                    Notification.requestPermission();
+                }
+            }
+        }
+
+        function updateMeta() {
+            cycleEl.textContent = String(Math.floor(completedFocus / 4) + 1);
+            todayCountEl.textContent = String(getTodayCount());
+
+            if (mode === "focus") {
+                const isLong = (completedFocus + 1) % 4 === 0;
+                nextEl.textContent = isLong ? `Long (${POMODORO_DURATIONS.long / 60}m)` : `Short (${POMODORO_DURATIONS.short / 60}m)`;
+            } else {
+                nextEl.textContent = `Focus (${POMODORO_DURATIONS.focus / 60}m)`;
+            }
+        }
+
+        function render() {
+            modeEl.textContent = modeLabelMap[mode];
+            timeEl.textContent = formatTime(secondsLeft);
+            updateMeta();
+            saveState();
+        }
+
+        function switchMode() {
+            if (mode === "focus") {
+                completedFocus += 1;
+                incrementTodayCount();
+                mode = completedFocus % 4 === 0 ? "long" : "short";
+            } else {
+                mode = "focus";
+            }
+
+            secondsLeft = getDurations(timerSetting)[mode];
+            render();
+            beep();
+            notify(mode);
+        }
+
+        function tick() {
+            if (secondsLeft > 0) {
+                secondsLeft -= 1;
+                render();
+                return;
+            }
+
+            switchMode();
+        }
+
+        function startTimer() {
+            if (timer !== null) return;
+            running = true;
+            timer = setInterval(tick, 1000);
+            saveState();
+        }
+
+        function pauseTimer() {
+            if (timer === null) return;
+            clearInterval(timer);
+            timer = null;
+            running = false;
+            saveState();
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            mode = "focus";
+            secondsLeft = getDurations(timerSetting).focus;
+            completedFocus = 0;
+            running = false;
+            render();
+        }
+
+        durationSelect.addEventListener("change", (e) => {
+            timerSetting = e.target.value;
+            resetTimer();
+        });
+
+        startBtn.addEventListener("click", startTimer);
+        pauseBtn.addEventListener("click", pauseTimer);
+        resetBtn.addEventListener("click", resetTimer);
+
+        restoreState();
+        if (running && timer === null) {
+            startTimer();
+        }
         render();
-    }
-
-    startBtn.addEventListener("click", startTimer);
-    pauseBtn.addEventListener("click", pauseTimer);
-    resetBtn.addEventListener("click", resetTimer);
-
-    restoreState();
-    if (running && timer === null) {
-        startTimer();
-    }
-    render();
-})();
+    })();
 </script>
 
 {% endblock %}
