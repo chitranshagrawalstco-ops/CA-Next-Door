@@ -5,25 +5,35 @@ from core.database import get_connection
 
 
 def _get_admin_supabase_config():
-    conn = get_connection()
-    cur = conn.cursor()
-    cur.execute(
-        """
-        SELECT supabase_url, supabase_key
-        FROM admin_settings
-        ORDER BY id DESC
-        LIMIT 1
-        """
-    )
-    row = cur.fetchone()
-    conn.close()
+    # 1) Environment variables take priority (persist across Render redeploys)
+    env_url = (os.environ.get("SUPABASE_URL") or "").strip()
+    env_key = (os.environ.get("SUPABASE_KEY") or "").strip()
+    if env_url and env_key:
+        return env_url, env_key
 
-    if not row:
+    # 2) Fall back to database admin_settings
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute(
+            """
+            SELECT supabase_url, supabase_key
+            FROM admin_settings
+            ORDER BY id DESC
+            LIMIT 1
+            """
+        )
+        row = cur.fetchone()
+        conn.close()
+
+        if not row:
+            return "", ""
+
+        url = (row[0] or "").strip()
+        key = (row[1] or "").strip()
+        return url, key
+    except Exception:
         return "", ""
-        
-    url = (row[0] or "").strip()
-    key = (row[1] or "").strip()
-    return url, key
 
 
 def _get_supabase_headers():
